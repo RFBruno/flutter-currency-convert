@@ -57,23 +57,65 @@ class _HomeState extends State<Home> {
   final realController = TextEditingController();
   final dolarController = TextEditingController();
   final euroController = TextEditingController();
+  final bitcoinController = TextEditingController();
 
-  double? real;
   double? dolar;
   double? euro;
+  double? bitcoin;
 
   void _realChanged(String value){
-    print(value);
+    if(value.isEmpty) {
+      _reset();
+      return;
+    }
+
+    double real = double.parse(value);
+    dolarController.text = (real/dolar!).toStringAsFixed(2);
+    euroController.text = (real/euro!).toStringAsFixed(2);
+    bitcoinController.text = (real/bitcoin!).toStringAsFixed(10);
   }
 
   void _dolarChanged(String value){
-    print(value);
-
+    if(value.isEmpty) {
+      _reset();
+      return;
+    }
+    
+    double dolar = double.parse(value);
+    realController.text = (dolar * this.dolar!).toStringAsFixed(2);
+    euroController.text = (dolar * this.dolar! / euro!).toStringAsFixed(2);
+    bitcoinController.text = (dolar * this.dolar! / bitcoin!).toStringAsFixed(10);
   }
 
   void _euroChanged(String value){
-    print(value);
+    if(value.isEmpty) {
+      _reset();
+      return;
+    }
     
+    double euro = double.parse(value);
+    realController.text = (euro * this.euro!).toStringAsFixed(2);
+    dolarController.text = (euro * this.euro! / dolar!).toStringAsFixed(2);
+    bitcoinController.text = (euro * this.euro! / bitcoin!).toStringAsFixed(10);    
+  }
+
+  void _bitcoinChanged(String value){
+     if(value.isEmpty) {
+      _reset();
+      return;
+    }
+
+    double bitcoin = double.parse(value);
+    realController.text = (bitcoin * this.bitcoin!).toStringAsFixed(2);
+    dolarController.text = (bitcoin * this.bitcoin! / dolar!).toStringAsFixed(2);
+    euroController.text = (bitcoin * this.bitcoin! / euro!).toStringAsFixed(2);    
+  }
+
+  void _reset(){
+    realController.clear();
+    dolarController.clear();
+    euroController.clear();
+    bitcoinController.clear();
   }
 
 
@@ -113,6 +155,7 @@ class _HomeState extends State<Home> {
               }else{
                 dolar = snapshot.data!["results"]['currencies']['USD']['buy'];
                 euro = snapshot.data!["results"]['currencies']['EUR']['buy'];
+                bitcoin = snapshot.data!["results"]['currencies']['BTC']['buy'];
 
                 return SingleChildScrollView(
                   padding: const EdgeInsets.all(10),
@@ -127,6 +170,8 @@ class _HomeState extends State<Home> {
                      buildTextField('Dólar', '\$', dolarController, _dolarChanged),
                      const Divider(),
                      buildTextField('Euro', '€', euroController, _euroChanged),
+                     const Divider(),
+                     buildTextField('Bitcoin', '₿', bitcoinController, _bitcoinChanged),
                     ],
                   ),
                 );
@@ -151,6 +196,6 @@ Widget buildTextField(String label, String prefix, TextEditingController control
         fontSize: 25
       ),
       onChanged: callback as void Function(String)?,
-      keyboardType: const TextInputType.numberWithOptions(),
+      keyboardType: TextInputType.numberWithOptions(decimal: true),
     );
 }
